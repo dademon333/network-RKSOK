@@ -1,7 +1,7 @@
 import asyncio
 from asyncio import StreamReader, StreamWriter
 
-from constants import ResponseStatus, RequestCommand
+from constants import ResponseStatus, RequestCommand, REQUESTS_ENCODING
 from handlers_utils import parse_request, return_response
 from schemas import Response, Request
 from services.postgresql import get_psql_cursor
@@ -13,12 +13,13 @@ async def process_request(reader: StreamReader, writer: StreamWriter) -> None:
     Entry point of user request handling
     """
     raw_request = await reader.read(2 ** 20)
-    raw_request = raw_request.decode()
+    raw_request = raw_request.decode(REQUESTS_ENCODING)
 
     while not raw_request.endswith('\r\n\r\n'):
         try:
-            raw_request += await asyncio.wait_for(reader.read(2 ** 20), timeout=10)
-            raw_request = raw_request.decode()
+            raw_request += (
+                await asyncio.wait_for(reader.read(2 ** 20), timeout=10)
+            ).decode(REQUESTS_ENCODING)
         except TimeoutError:
             await return_response(
                 Response(status=ResponseStatus.INCORRECT_REQUEST),

@@ -45,7 +45,7 @@ class ApprovalServerClient:
 
     def _format_request(self) -> bytes:
         """Returns raw request in valid RKSOK form"""
-        return f'{RequestCommand.ASK_PERMISSION} {PROTOCOL}\r\n{self._raw_request}\r\n\r\n'.encode(REQUESTS_ENCODING)
+        return f'{RequestCommand.ASK_PERMISSION.value} {PROTOCOL}\r\n{self._raw_request}\r\n\r\n'.encode(REQUESTS_ENCODING)
 
     async def _send_request(self) -> str:
         """Sends request to approval server and returns response in raw form"""
