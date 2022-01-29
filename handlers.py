@@ -12,20 +12,27 @@ async def process_request(reader: StreamReader, writer: StreamWriter) -> None:
     """Reads request, calls its handling and returns response to user
     Entry point of user request handling
     """
-    raw_request = await reader.read(2 ** 20)
-    raw_request = raw_request.decode(REQUESTS_ENCODING)
+    try:
+        raw_request = await reader.read(2 ** 20)
+        raw_request = raw_request.decode(REQUESTS_ENCODING)
 
-    while not raw_request.endswith('\r\n\r\n'):
-        try:
-            raw_request += (
-                await asyncio.wait_for(reader.read(2 ** 20), timeout=10)
-            ).decode(REQUESTS_ENCODING)
-        except TimeoutError:
-            await return_response(
-                Response(status=ResponseStatus.INCORRECT_REQUEST),
-                writer
-            )
-            return
+        while not raw_request.endswith('\r\n\r\n'):
+            try:
+                raw_request += (
+                    await asyncio.wait_for(reader.read(2 ** 20), timeout=10)
+                ).decode(REQUESTS_ENCODING)
+            except TimeoutError:
+                await return_response(
+                    Response(status=ResponseStatus.INCORRECT_REQUEST),
+                    writer
+                )
+                return
+    except UnicodeDecodeError:
+        await return_response(
+            Response(status=ResponseStatus.INCORRECT_REQUEST),
+            writer
+        )
+        return
 
     response = await handle_request(raw_request)
     await return_response(response, writer)
