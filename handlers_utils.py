@@ -10,7 +10,7 @@ _REQUEST_REGEX = re.compile(r'(?P<command>[А-Я]+) (?P<argument>.+) РКСОК/
 
 
 def parse_request(request: str) -> Request | None:
-    """Parse request to Request model
+    """Parses request to Request model
     Returns Request if request is valid, else - None
     """
     allowed_commands = [
